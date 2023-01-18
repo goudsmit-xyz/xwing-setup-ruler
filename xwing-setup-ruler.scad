@@ -10,17 +10,29 @@ slotMargin = 0.6;
 slotLength = 50;
 labelMargin = 3;
 
-magnetThickness = 0.5;
+magnetThickness = 0.4;
 magnetRadius = 10/2;
 
-range = 100;
+recessHeight = magnetThickness + 0.15; // room for glue
+recessRadius = magnetRadius + 0.05;
+
+range = 100; // helper constant for calculations involving range
 
 rotate([0,0,45])    // to accomodate easy STL import with square buildplates 
+
 union() {           // combine the rulers moved sideways
-  translate([-width,0,0]) topRuler();
-  translate([width,0,0]) bottomRuler();
+    
+    translate([-width,0,0])  // move sideways (to the left)
+        // flip upside down and shift back so no/less supports needed
+        translate([0,0,thickness])
+        rotate([0,180,0])
+            topRuler();
+    
+    translate([width,0,0]) // move sideways (to the right)
+        bottomRuler();
 }
 
+// The rail of the bottom ruler that slides into the top ruler
 module rail() {
     difference() {
         translate([0, slotLength,0])
@@ -57,34 +69,32 @@ module railSlot() {
     ]);
 }
 
-// TODO:
-// - change shape of extension rail so it stays put
-// - maybe increase thickness?
-
+// Textual label indicating range
 module rangeLabel(label, atRange) {
     translate([width/2,(atRange*range)+labelMargin,thickness-notchDepth])
         linear_extrude(notchDepth)
         text(text = label, halign = "center"); 
 }
 
+// Notch for measuring of actual range
 module notch(atRange) {
     translate([0,(atRange*range) - notchWidth/2,thickness-notchDepth])
         cube([width,notchWidth,notchDepth]);
 }
 
+// Slot at the bottom of a ruler for cross-connecting the other
 module bottomCrossSlot(y) {
     translate([0,y-slotMargin/2,0])
         union() {
             cube([width,width+slotMargin,thickness/2]);
             translate([width/2, width/2,thickness/2])
-            cylinder(magnetThickness, magnetRadius, magnetRadius, center = true);
+                cylinder(recessHeight*2, recessRadius, recessRadius, center = true); // make pretty
         }
 }
 
+// The entire top ruler (to range 2.5)
 module topRuler() {
-    // flip upside down and shift back so no/less supports needed
-    translate([0,0,thickness])
-    rotate([0,180,0])
+
     translate([-width/2,-length/2]) // center on middle of ruler    
     difference() {
         cube([15,length,thickness]);  // full range 3 ruler
@@ -111,7 +121,7 @@ module topRuler() {
 
 }
 
-// lower ruler (4.5 extension)
+// The entire lower ruler (4.5 extension)
 module bottomRuler() { 
     translate([-width/2,-length/2,0]) // center on middle line 
     union() {
@@ -128,15 +138,14 @@ module bottomRuler() {
             
             // slot for crossing rulers
             // TODO: modularize?
-            // TODO: add optional opening for a magnet?
             translate([0,(range*2)-slotLength-width-slotMargin/2, thickness/2])
                 union() {
                     cube([width,width+slotMargin, thickness/2]);
-                    translate([width/2, width/2,-magnetThickness/2])
-                    cylinder(magnetThickness, magnetRadius, magnetRadius, center = true);
+                    translate([width/2, width/2,0])
+                        cylinder(recessHeight*2, recessRadius, recessRadius, center = true);
                 }
             
-            // range 3
+            // range 3 (this ruler effectively starts at 2.5)
             notch(0.5);
             rangeLabel("3", 0.5);
            
