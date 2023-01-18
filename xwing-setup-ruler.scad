@@ -6,8 +6,10 @@ notchDepth = 0.3;
 notchWidth = 1;
 
 railWidth = width/2;
+railLength = 50;
+
 slotMargin = 0.6;
-slotLength = 50;
+
 labelMargin = 3;
 
 magnetThickness = 0.4;
@@ -35,9 +37,9 @@ union() {           // combine the rulers moved sideways
 // The rail of the bottom ruler that slides into the top ruler
 module rail() {
     difference() {
-        translate([0, slotLength,0])
+        translate([0, railLength,0])
         rotate([90,0,0])
-        linear_extrude(slotLength)
+        linear_extrude(railLength)
         polygon([
             [-(railWidth/2 + 1), thickness/2],
             [ (railWidth/2 + 1), thickness/2],
@@ -46,7 +48,7 @@ module rail() {
         ]);
         
         textDepth = 0.5;
-        translate([0,slotLength/2,thickness/2 - textDepth])
+        translate([0,railLength/2,thickness/2 - textDepth])
         linear_extrude(textDepth)
         rotate([0,0,270])
         text("goudsmit.xyz", size = 5, valign = "center", halign = "center", font = "Liberation Sans:style=Bold");
@@ -58,15 +60,15 @@ module rail() {
 // that way it could be scaled pre-chop and the side angle would be the same
 // the base of the triangle would be the widest width
 module railSlot() {
-    translate([0, slotLength,0])
+    translate([0, railLength,0])
     rotate([90,0,0])
-    linear_extrude(slotLength)
-    polygon([
-        [-(railWidth/2 + 1 + slotMargin/2), thickness/2],
-        [ (railWidth/2 + 1 + slotMargin/2), thickness/2],
-        [ (railWidth/2 + slotMargin/2), 0],
-        [-(railWidth/2 + slotMargin/2), 0]
-    ]);
+    linear_extrude(railLength)
+        polygon([
+            [-(railWidth/2 + 1 + slotMargin/2), thickness/2],
+            [ (railWidth/2 + 1 + slotMargin/2), thickness/2],
+            [ (railWidth/2 + slotMargin/2), 0],
+            [-(railWidth/2 + slotMargin/2), 0]
+        ]);
 }
 
 // Textual label indicating range
@@ -100,7 +102,7 @@ module topRuler() {
         cube([15,length,thickness]);  // full range 3 ruler
         
         // slot for extending ruler
-        translate([width/2,length-slotLength,0])
+        translate([width/2,length-railLength,0])
             railSlot();
         
         // slot for crossing rulers outside range 1 (ship placements)
@@ -131,14 +133,14 @@ module bottomRuler() {
             rail();
  
         // start the actual ruler part at the end of the rail
-        translate([0,slotLength,0])
+        translate([0,railLength,0])
         difference() {
             // solid range 2 part for extending
-            cube([width,length-slotLength,thickness]);  
+            cube([width,length-railLength,thickness]);  
             
             // slot for crossing rulers
             // TODO: modularize?
-            translate([0,(range*2)-slotLength-width-slotMargin/2, thickness/2])
+            translate([0,(range*2)-railLength-width-slotMargin/2, thickness/2])
                 union() {
                     cube([width,width+slotMargin, thickness/2]);
                     translate([width/2, width/2,0])
